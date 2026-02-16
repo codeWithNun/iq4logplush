@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mobile whiteboard · practice workspace</title>
+    <title>mobile • glass board</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -15,29 +15,28 @@
         }
 
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.5);
             --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            --toolbar-bg: rgba(255, 255, 255, 0.6);
+            --nav-bg: rgba(255, 255, 255, 0.6);
             --text-dark: #1e293b;
             --text-light: #f8fafc;
             --accent: #4f46e5;
             --accent-soft: #6366f1;
-            --bg-grid: #cbd5e1;
             --panel-bg: rgba(255, 255, 255, 0.8);
             --close-btn: #ef4444;
+            --nav-blur: blur(18px);
         }
 
         [data-theme="dark"] {
             --glass-bg: rgba(30, 41, 59, 0.8);
             --glass-border: rgba(71, 85, 105, 0.6);
             --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            --toolbar-bg: rgba(15, 23, 42, 0.7);
+            --nav-bg: rgba(15, 23, 42, 0.7);
             --text-dark: #f1f5f9;
             --text-light: #0f172a;
             --accent: #818cf8;
             --accent-soft: #a5b4fc;
-            --bg-grid: #334155;
             --panel-bg: rgba(30, 41, 59, 0.9);
             --close-btn: #f87171;
         }
@@ -54,7 +53,7 @@
             background: #0b1120;
         }
 
-        /* ----- top info row (compact) ----- */
+        /* ----- TOP INFO PANEL (flex-wrap, glass) ----- */
         .info-panel {
             position: fixed;
             top: 10px;
@@ -65,148 +64,179 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 40px;
-            padding: 8px 18px;
+            padding: 8px 16px;
             box-shadow: var(--glass-shadow);
             z-index: 2000;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: center;
             flex-wrap: wrap;
             justify-content: center;
-            max-width: 92vw;
+            max-width: 94vw;
             color: var(--text-dark);
             font-size: 0.9rem;
             pointer-events: none;
+            backdrop-filter: blur(20px);
         }
+
         .question-preview p {
             font-weight: 600;
-            background: rgba(255,255,255,0.3);
-            padding: 4px 14px;
+            background: rgba(255,255,255,0.25);
+            padding: 4px 16px;
             border-radius: 40px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 40vw;
+            white-space: normal;         /* allow wrap */
+            word-break: break-word;
+            max-width: 50vw;
+            min-width: 160px;
+            text-align: center;
+            font-size: 0.9rem;
         }
+
         .options-preview {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
+            justify-content: center;
         }
+
         .option-chip {
             background: var(--accent);
             color: white;
             padding: 4px 12px;
             border-radius: 30px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
+            white-space: nowrap;
         }
 
-        /* ----- VERTICAL floating toolbar (mobile friendly) ----- */
-        .toolbar-vertical {
+        /* ----- BOTTOM NAV BAR (glass, flex-wrap, always visible) ----- */
+        .bottom-nav {
             position: fixed;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--toolbar-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 96vw;
+            max-width: 580px;
+            background: var(--nav-bg);
+            backdrop-filter: var(--nav-blur);
+            -webkit-backdrop-filter: var(--nav-blur);
             border: 1px solid var(--glass-border);
-            border-radius: 48px;
-            padding: 16px 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
+            border-radius: 28px;
+            padding: 10px 10px;
             box-shadow: var(--glass-shadow);
-            z-index: 1500;
-            max-height: 85vh;
-            overflow-y: auto;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            width: 70px;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        .toolbar-vertical::-webkit-scrollbar { display: none; }
-
-        .tool-group-vertical {
+            z-index: 1800;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
+            flex-wrap: wrap;
+            justify-content: center;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(130,130,130,0.2);
+            gap: 6px 4px;              /* compact gap */
+            transition: all 0.2s;
+            pointer-events: auto;
         }
-        .tool-group-vertical:last-child { border-bottom: none; }
 
-        .tool-btn {
+        /* all tool buttons inside bottom nav */
+        .bottom-nav .tool-btn {
             background: transparent;
             border: none;
-            width: 52px;
-            height: 52px;
+            min-width: 48px;
+            height: 48px;
             border-radius: 40px;
-            font-size: 1.4rem;
+            font-size: 0;                /* hide underlying spans, we use flex column */
             color: var(--text-dark);
-            display: flex;
+            display: inline-flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.15s;
             border: 1px solid transparent;
             touch-action: manipulation;
-            padding: 0;
+            padding: 6px 4px;
+            flex: 0 1 auto;
+            backdrop-filter: blur(2px);
+            line-height: 1.2;
+            gap: 2px;
         }
-        .tool-btn span { font-size: 1.3rem; }
-        .tool-btn:hover {
-            background: rgba(255,255,255,0.4);
-            border-color: var(--glass-border);
-            transform: scale(1.05);
+
+        /* icon + label both using spans – we restructure inner HTML later */
+        .bottom-nav .tool-btn span {
+            font-size: 12px;              /* fixed between 10-12px */
+            font-weight: 500;
+            display: block;
         }
-        .tool-btn.active {
+
+        .bottom-nav .tool-btn span:first-child {
+            font-size: 18px;              /* icon size slightly smaller */
+            line-height: 1;
+        }
+
+        .bottom-nav .tool-btn span:last-child {
+            font-size: 10px;               /* label exactly 10px */
+            letter-spacing: 0.2px;
+        }
+
+        /* active state */
+        .bottom-nav .tool-btn.active {
             background: var(--accent);
             color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            border-color: rgba(255,255,255,0.5);
         }
-        .tool-btn:disabled {
+
+        .bottom-nav .tool-btn:disabled {
             opacity: 0.3;
             pointer-events: none;
         }
 
-        /* color & size inside vertical bar */
-        .color-size-group {
-            flex-direction: column;
-            gap: 10px;
+        /* special groups: color picker & slider integrated compactly */
+        .bottom-nav .color-size-group {
+            display: flex;
+            flex-direction: row;
             align-items: center;
+            background: rgba(0,0,0,0.05);
+            border-radius: 40px;
+            padding: 0px 6px;
+            gap: 6px;
+            height: 48px;
+            backdrop-filter: blur(4px);
         }
-        input[type="color"] {
-            width: 45px;
-            height: 45px;
+
+        .bottom-nav input[type="color"] {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 2px solid white;
             cursor: pointer;
             background: transparent;
             padding: 2px;
         }
-        .size-control {
+
+        .bottom-nav .size-control {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            font-size: 0.7rem;
+            gap: 4px;
+            font-size: 10px;
             color: var(--text-dark);
         }
-        input[type="range"] {
-            width: 60px;
-            height: 6px;
-            transform: rotate(-90deg) translateX(-20px);
-            margin: 25px 0;
-        }
-        #sizeDisplay { 
-            margin-top: 30px; 
-            font-weight: 600;
+
+        .bottom-nav input[type="range"] {
+            width: 56px;
+            height: 4px;
+            border-radius: 4px;
         }
 
-        /* canvas container */
+        .bottom-nav #sizeDisplay {
+            min-width: 20px;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
+        /* hide vertical toolbar completely */
+        .toolbar-vertical {
+            display: none;
+        }
+
+        /* canvas container – adjusts height with bottom nav */
         .canvas-container {
             position: relative;
             width: 100vw;
@@ -214,6 +244,8 @@
             overflow: auto;
             background: var(--bg-secondary, #f8fafc);
             scroll-behavior: smooth;
+            padding-bottom: 90px;          /* space for multirow bottom nav */
+            box-sizing: border-box;
         }
         [data-theme="dark"] .canvas-container { background: #1a1f2e; }
 
@@ -225,13 +257,13 @@
         }
         [data-theme="dark"] #canvas { background: #2d3748; }
 
-        /* minimap (smaller for mobile) */
+        /* minimap stays but slightly adjusted */
         .minimap {
             position: fixed;
-            bottom: 20px;
+            bottom: 110px;                  /* above nav */
             right: 12px;
-            width: 130px;
-            height: 90px;
+            width: 120px;
+            height: 80px;
             background: var(--panel-bg);
             backdrop-filter: blur(8px);
             border: 1px solid var(--glass-border);
@@ -253,18 +285,18 @@
             pointer-events: none;
         }
 
-        /* fullscreen close button (appears only in fullscreen) */
+        /* fullscreen close button */
         .fullscreen-close {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 54px;
-            height: 54px;
+            width: 48px;
+            height: 48px;
             border-radius: 30px;
             background: var(--close-btn);
             color: white;
             border: 2px solid rgba(255,255,255,0.5);
-            font-size: 2rem;
+            font-size: 1.8rem;
             display: none;
             align-items: center;
             justify-content: center;
@@ -272,10 +304,9 @@
             box-shadow: 0 8px 20px rgba(239,68,68,0.6);
             cursor: pointer;
             backdrop-filter: blur(6px);
-            transition: transform 0.1s;
         }
         .fullscreen-close:active { transform: scale(1.1); }
-        .fullscreen-close span { font-size: 2rem; line-height: 1; }
+        .fullscreen-close span { font-size: 1.8rem; }
 
         /* text editing */
         .text-editor {
@@ -283,68 +314,49 @@
             background: white;
             border: 2px solid var(--accent);
             border-radius: 12px;
-            padding: 10px;
+            padding: 8px;
             font-family: 'Inter', sans-serif;
             font-size: 20px;
             outline: none;
             resize: both;
-            min-width: 140px;
+            min-width: 130px;
             z-index: 2500;
             box-shadow: var(--glass-shadow);
             color: #1e293b;
         }
+
+        /* mobile touch optimizations */
+        .bottom-nav .tool-btn {
+            min-width: 44px;   /* friendly tap */
+        }
+
+        /* for very narrow screens (360px) buttons may wrap to 3 lines */
+        @media (max-width: 400px) {
+            .bottom-nav .tool-btn span:last-child {
+                font-size: 9px;   /* still within range but safe */
+            }
+            .bottom-nav .tool-btn {
+                min-width: 42px;
+                height: 46px;
+            }
+        }
     </style>
 </head>
 <body data-theme="light">
-    <!-- info panel (populated by JavaScript from URL params) -->
+    <!-- info panel (flex-wrap) -->
     <div class="info-panel" id="infoPanel">
         <div class="question-preview">
-            <p id="questionDisplay">📝 Loading...</p>
+            <p id="questionDisplay">📝 Practice whiteboard</p>
         </div>
         <div class="options-preview" id="optionsDisplay">
-            <!-- options will be injected here -->
+            <!-- options injected via js -->
         </div>
     </div>
 
-    <!-- VERTICAL TOOLBAR (left) -->
-    <div class="toolbar-vertical" id="toolbarVertical">
-        <div class="tool-group-vertical">
-            <button class="tool-btn" id="handToolBtn" onclick="setTool('hand')"><span>🖐️ <br>hand</span></button>
-            <button class="tool-btn active" id="pencilToolBtn" onclick="setTool('pencil')"><span>✏️<br>pencil</span></button>
-            <button class="tool-btn" id="eraserToolBtn" onclick="setTool('eraser')"><span>🧽<br>eraser</span></button>
-        </div>
-        <div class="tool-group-vertical">
-            <button class="tool-btn" id="rectBtn" onclick="setTool('rectangle')"><span>⬛ <br>rectangle</span></button>
-            <button class="tool-btn" id="circleBtn" onclick="setTool('circle')"><span>⚪<br>circle</span></button>
-            <button class="tool-btn" id="lineBtn" onclick="setTool('line')"><span>📏<br>line</span></button>
-            <button class="tool-btn" id="textBtn" onclick="setTool('text')"><span>🔤<br>text</span></button>
-        </div>
-        <div class="tool-group-vertical">
-            <button class="tool-btn" id="undoBtn" onclick="undo()" disabled><span>↩️ <br>undo</span></button>
-            <button class="tool-btn" id="redoBtn" onclick="redo()" disabled><span>↪️<br>redo</span></button>
-            <button class="tool-btn" onclick="clearBoard()"><span>🗑️<br>clear</span></button>
-        </div>
-        <div class="tool-group-vertical">
-            <button class="tool-btn" id="gridToggle" onclick="toggleGrid()"><span>📐<br>grid</span></button>
-            <button class="tool-btn" onclick="toggleTheme()"><span>🌓<br>theme</span></button>
-            <button class="tool-btn fullscreen-btn" onclick="toggleFullScreen()"><span>⛶</span></button>
-        </div>
-        <div class="tool-group-vertical color-size-group">
-            <input type="color" id="colorPicker" value="#4f46e5">
-            <div class="size-control">
-                <input type="range" id="sizeSlider" min="1" max="30" value="5" orient="vertical">
-                <span id="sizeDisplay">5</span>
-            </div>
-        </div>
-        <div class="tool-group-vertical">
-            <button class="tool-btn" onclick="zoomIn()"><span>➕<br>zoom in</span></button>
-            <button class="tool-btn" onclick="zoomOut()"><span>➖<br>zoom out</span></button>
-            <button class="tool-btn" onclick="resetZoom()"><span>⟲<br>reset zoom</span></button>
-            <button class="tool-btn" onclick="saveHighRes()"><span>💾<br>save</span></button>
-        </div>
-    </div>
+    <!-- NEW BOTTOM NAV BAR (glass, wrapping, all buttons visible) -->
+    <div class="bottom-nav" id="bottomNav"></div>
 
-    <!-- canvas container -->
+    <!-- canvas container (now with bottom padding) -->
     <div class="canvas-container" id="canvasContainer">
         <canvas id="canvas"></canvas>
     </div>
@@ -352,30 +364,28 @@
     <!-- minimap -->
     <div class="minimap" id="minimapWrapper">
         <canvas id="minimapCanvas"></canvas>
-        <div class="minimap-viewport" id="minimapViewport"></div>
+ <div class="minimap-viewport" id="minimapViewport"></div>
     </div>
 
-    <!-- fullscreen close button (visible only when fullscreen) -->
-    <div class="fullscreen-close" id="fullscreenCloseBtn" onclick="exitFullscreen()"><span>✕</span></div>
+    <!-- fullscreen close button -->
+    <div class="fullscreen-close" id="fullscreenCloseBtn"><span>✕</span></div>
 
     <script>
         (function() {
-            // ---------- read URL parameters with JavaScript ----------
+            // ---------- read URL parameters ----------
             function getQueryParams() {
                 const params = new URLSearchParams(window.location.search);
                 return {
-                    q: params.get('q') || '📝 Practice whiteboard',
-                    opts: params.get('opts') ? params.get('opts').split(',').map(s => s.trim()) : ['A', 'B', 'C']
+                    q: params.get('q') || '📝 Mobile responsive whiteboard · long question that wraps nicely on 360px screen',
+                    opts: params.get('opts') ? params.get('opts').split(',').map(s => s.trim()) : ['Option A', 'Option B', 'Option C', 'Option D']
                 };
             }
 
-            // Update info panel with question and options
             function updateInfoPanel() {
                 const { q, opts } = getQueryParams();
                 document.getElementById('questionDisplay').textContent = q;
-                
                 const optionsContainer = document.getElementById('optionsDisplay');
-                optionsContainer.innerHTML = ''; // clear loading
+                optionsContainer.innerHTML = '';
                 opts.forEach(opt => {
                     const chip = document.createElement('span');
                     chip.className = 'option-chip';
@@ -394,7 +404,6 @@
             const viewportDiv = document.getElementById('minimapViewport');
             const closeBtn = document.getElementById('fullscreenCloseBtn');
 
-            // large canvas
             const BASE_WIDTH = 3000, BASE_HEIGHT = 2000;
             canvas.width = BASE_WIDTH;
             canvas.height = BASE_HEIGHT;
@@ -409,18 +418,101 @@
             let gridEnabled = false;
             let zoom = 1.0;
             let theme = 'light';
-
-            // history
             let history = [];
             let historyIndex = -1;
             const MAX_HISTORY = 40;
-
             let activeTextInput = null;
-
-            // pan for hand
             let panStart = { x:0, y:0, cursorX:0, cursorY:0 };
 
-            // ---------- helpers ----------
+            // ---------- build bottom nav dynamically (keep HTML clean) ----------
+            const bottomNav = document.getElementById('bottomNav');
+            // tool definitions: icon, label, id, onClick (string), extra group flag
+            const tools = [
+                { icon: '🖐️', label: 'hand', id: 'handToolBtn', tool: 'hand' },
+                { icon: '✏️', label: 'pencil', id: 'pencilToolBtn', tool: 'pencil', active: true },
+                { icon: '🧽', label: 'eraser', id: 'eraserToolBtn', tool: 'eraser' },
+                { icon: '⬛', label: 'rect', id: 'rectBtn', tool: 'rectangle' },
+                { icon: '⚪', label: 'circle', id: 'circleBtn', tool: 'circle' },
+                { icon: '📏', label: 'line', id: 'lineBtn', tool: 'line' },
+                { icon: '🔤', label: 'text', id: 'textBtn', tool: 'text' },
+                { icon: '↩️', label: 'undo', id: 'undoBtn', action: 'undo' },
+                { icon: '↪️', label: 'redo', id: 'redoBtn', action: 'redo' },
+                { icon: '🗑️', label: 'clear', id: 'clearBtn', action: 'clear' },
+                { icon: '📐', label: 'grid', id: 'gridToggle', action: 'grid' },
+                { icon: '🌓', label: 'theme', id: 'themeBtn', action: 'theme' },
+                { icon: '⛶', label: 'full', id: 'fullBtn', action: 'fullscreen' },
+                { icon: '➕', label: 'zoom+', id: 'zoomInBtn', action: 'zoomin' },
+                { icon: '➖', label: 'zoom-', id: 'zoomOutBtn', action: 'zoomout' },
+                { icon: '⟲', label: 'reset', id: 'resetZoomBtn', action: 'resetzoom' },
+                { icon: '💾', label: 'save', id: 'saveBtn', action: 'save' }
+            ];
+
+            tools.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = `tool-btn ${t.active ? 'active' : ''}`;
+                btn.id = t.id || `btn-${t.tool}`;
+                btn.setAttribute('data-tool', t.tool || '');
+                btn.innerHTML = `<span>${t.icon}</span><span>${t.label}</span>`;
+                bottomNav.appendChild(btn);
+            });
+
+            // add color & size group manually (more complex)
+            const colorGroup = document.createElement('div');
+            colorGroup.className = 'tool-btn color-size-group';
+            colorGroup.innerHTML = `
+                <input type="color" id="colorPicker" value="#4f46e5">
+                <div class="size-control">
+                    <input type="range" id="sizeSlider" min="1" max="30" value="5">
+                    <span id="sizeDisplay">5</span>
+                </div>
+            `;
+            bottomNav.appendChild(colorGroup);
+
+            // ---------- attach events after creation ----------
+            function setActiveTool(tool) {
+                document.querySelectorAll('.bottom-nav .tool-btn').forEach(b => b.classList.remove('active'));
+                if (tool === 'hand') document.getElementById('handToolBtn')?.classList.add('active');
+                if (tool === 'pencil') document.getElementById('pencilToolBtn')?.classList.add('active');
+                if (tool === 'eraser') document.getElementById('eraserToolBtn')?.classList.add('active');
+                if (tool === 'rectangle') document.getElementById('rectBtn')?.classList.add('active');
+                if (tool === 'circle') document.getElementById('circleBtn')?.classList.add('active');
+                if (tool === 'line') document.getElementById('lineBtn')?.classList.add('active');
+                if (tool === 'text') document.getElementById('textBtn')?.classList.add('active');
+                if (activeTextInput) cancelTextEdit();
+            }
+
+            window.setTool = function(tool) {
+                currentTool = tool;
+                setActiveTool(tool);
+            };
+
+            // override button click handlers
+            document.getElementById('handToolBtn')?.addEventListener('click', ()=>setTool('hand'));
+            document.getElementById('pencilToolBtn')?.addEventListener('click', ()=>setTool('pencil'));
+            document.getElementById('eraserToolBtn')?.addEventListener('click', ()=>setTool('eraser'));
+            document.getElementById('rectBtn')?.addEventListener('click', ()=>setTool('rectangle'));
+            document.getElementById('circleBtn')?.addEventListener('click', ()=>setTool('circle'));
+            document.getElementById('lineBtn')?.addEventListener('click', ()=>setTool('line'));
+            document.getElementById('textBtn')?.addEventListener('click', ()=>setTool('text'));
+
+            document.getElementById('undoBtn')?.addEventListener('click', ()=> window.undo());
+            document.getElementById('redoBtn')?.addEventListener('click', ()=> window.redo());
+            document.getElementById('clearBtn')?.addEventListener('click', ()=> window.clearBoard());
+            document.getElementById('gridToggle')?.addEventListener('click', ()=> window.toggleGrid());
+            document.getElementById('themeBtn')?.addEventListener('click', ()=> window.toggleTheme());
+            document.getElementById('fullBtn')?.addEventListener('click', ()=> window.toggleFullScreen());
+            document.getElementById('zoomInBtn')?.addEventListener('click', ()=> window.zoomIn());
+            document.getElementById('zoomOutBtn')?.addEventListener('click', ()=> window.zoomOut());
+            document.getElementById('resetZoomBtn')?.addEventListener('click', ()=> window.resetZoom());
+            document.getElementById('saveBtn')?.addEventListener('click', ()=> window.saveHighRes());
+
+            // color picker & slider
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeDisplay = document.getElementById('sizeDisplay');
+            sizeSlider.addEventListener('input', (e) => sizeDisplay.innerText = e.target.value);
+
+            // history / undo redo functions (keep same)
             function saveState() {
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
@@ -430,256 +522,81 @@
                 updateUndoRedo();
                 updateMinimap();
             }
-
             function updateUndoRedo() {
                 document.getElementById('undoBtn').disabled = historyIndex <= 0;
                 document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
             }
-
             window.undo = function() { if (historyIndex > 0) { historyIndex--; ctx.putImageData(history[historyIndex], 0, 0); updateUndoRedo(); updateMinimap(); } };
             window.redo = function() { if (historyIndex < history.length - 1) { historyIndex++; ctx.putImageData(history[historyIndex], 0, 0); updateUndoRedo(); updateMinimap(); } };
 
-            // set tool & active class
-            window.setTool = function(tool) {
-                currentTool = tool;
-                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-                if (tool === 'hand') document.getElementById('handToolBtn').classList.add('active');
-                if (tool === 'pencil') document.getElementById('pencilToolBtn').classList.add('active');
-                if (tool === 'eraser') document.getElementById('eraserToolBtn').classList.add('active');
-                if (tool === 'rectangle') document.getElementById('rectBtn').classList.add('active');
-                if (tool === 'circle') document.getElementById('circleBtn').classList.add('active');
-                if (tool === 'line') document.getElementById('lineBtn').classList.add('active');
-                if (tool === 'text') document.getElementById('textBtn').classList.add('active');
-                if (activeTextInput) cancelTextEdit();
-            };
-
-            // grid
+            // other functions remain largely the same, copy from original but ensure they reference correct elements
             window.toggleGrid = function() {
                 gridEnabled = !gridEnabled;
                 document.getElementById('gridToggle').classList.toggle('active', gridEnabled);
                 redrawGrid();
             };
-            function redrawGrid() {
-                if (!gridEnabled) {
-                    if (history[historyIndex]) ctx.putImageData(history[historyIndex], 0, 0);
-                    return;
-                }
+            function redrawGrid() { /* same as original */ 
+                if (!gridEnabled) { if (history[historyIndex]) ctx.putImageData(history[historyIndex], 0, 0); return; }
                 if (history[historyIndex]) ctx.putImageData(history[historyIndex], 0, 0);
-                ctx.save();
-                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5;
-                const step = 30;
-                ctx.beginPath();
-                for (let i = 0; i <= canvas.width; i += step) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
-                for (let i = 0; i <= canvas.height; i += step) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
-                ctx.stroke();
-                ctx.restore();
+                ctx.save(); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5; const step = 30;
+                ctx.beginPath(); for (let i=0;i<=canvas.width;i+=step) { ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); } for (let i=0;i<=canvas.height;i+=step) { ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); } ctx.stroke(); ctx.restore();
             }
-
-            // zoom
-            window.zoomIn = function() { zoom = Math.min(3, zoom + 0.2); applyZoom(); };
-            window.zoomOut = function() { zoom = Math.max(0.3, zoom - 0.2); applyZoom(); };
-            window.resetZoom = function() { zoom = 1.0; applyZoom(); centerCanvas(); };
+            window.zoomIn = function() { zoom = Math.min(3, zoom+0.2); applyZoom(); };
+            window.zoomOut = function() { zoom = Math.max(0.3, zoom-0.2); applyZoom(); };
+            window.resetZoom = function() { zoom=1.0; applyZoom(); centerCanvas(); };
             function applyZoom() { canvas.style.transform = `scale(${zoom})`; updateMinimapViewport(); }
-            function centerCanvas() {
-                container.scrollLeft = (canvas.width * zoom - container.clientWidth) / 2;
-                container.scrollTop = (canvas.height * zoom - container.clientHeight) / 2;
-                updateMinimapViewport();
+            function centerCanvas() { container.scrollLeft = (canvas.width*zoom - container.clientWidth)/2; container.scrollTop = (canvas.height*zoom - container.clientHeight)/2; updateMinimapViewport(); }
+
+            window.toggleFullScreen = function() { if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); closeBtn.style.display='flex'; } else { exitFullscreen(); } };
+            window.exitFullscreen = function() { if (document.exitFullscreen) document.exitFullscreen(); closeBtn.style.display='none'; };
+            document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) closeBtn.style.display='none'; });
+
+            window.toggleTheme = function() { theme = theme==='light'?'dark':'light'; document.body.parentElement.setAttribute('data-theme', theme); redrawGrid(); };
+
+            // minimap & drawing functions (copy from original, but keep minimal)
+            function updateMinimap() { miniCtx.drawImage(canvas, 0, 0, 130, 90); }
+            function updateMinimapViewport() { /* as before */ 
+                const left=container.scrollLeft, top=container.scrollTop, w=container.clientWidth, h=container.clientHeight, totalW=canvas.width*zoom, totalH=canvas.height*zoom;
+                viewportDiv.style.left = (left/totalW)*130+'px'; viewportDiv.style.top = (top/totalH)*90+'px'; viewportDiv.style.width = (w/totalW)*130+'px'; viewportDiv.style.height = (h/totalH)*90+'px';
             }
+            container.addEventListener('scroll', updateMinimapViewport); window.addEventListener('resize', updateMinimapViewport);
 
-            // fullscreen handling
-            window.toggleFullScreen = function() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                    closeBtn.style.display = 'flex';
-                } else {
-                    exitFullscreen();
-                }
-            };
-            window.exitFullscreen = function() {
-                if (document.exitFullscreen) document.exitFullscreen();
-                closeBtn.style.display = 'none';
-            };
-            document.addEventListener('fullscreenchange', () => {
-                if (!document.fullscreenElement) closeBtn.style.display = 'none';
-            });
-
-            // theme
-            window.toggleTheme = function() {
-                theme = theme === 'light' ? 'dark' : 'light';
-                document.body.parentElement.setAttribute('data-theme', theme);
-                redrawGrid();
-            };
-
-            // minimap
-            function updateMinimap() {
-                minimap.width = 130; minimap.height = 90;
-                miniCtx.drawImage(canvas, 0, 0, 130, 90);
+            // drawing core (copy from original, getCanvasCoords etc)
+            function getCanvasCoords(e) { /* ... */ 
+                const rect = canvas.getBoundingClientRect(); const scaleX = canvas.width/rect.width; const scaleY = canvas.height/rect.height;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: (clientX-rect.left)*scaleX/zoom, y: (clientY-rect.top)*scaleY/zoom };
             }
-            function updateMinimapViewport() {
-                const left = container.scrollLeft, top = container.scrollTop;
-                const width = container.clientWidth, height = container.clientHeight;
-                const totalW = canvas.width * zoom, totalH = canvas.height * zoom;
-                const vpLeft = (left / totalW) * 130, vpTop = (top / totalH) * 90;
-                const vpW = (width / totalW) * 130, vpH = (height / totalH) * 90;
-                viewportDiv.style.left = vpLeft + 'px'; viewportDiv.style.top = vpTop + 'px';
-                viewportDiv.style.width = vpW + 'px'; viewportDiv.style.height = vpH + 'px';
+            function handleStart(e) { e.preventDefault(); /* hand, pencil etc same */ 
+                if (currentTool==='hand') { panStart.x=container.scrollLeft; panStart.y=container.scrollTop; const cX=e.touches?e.touches[0].clientX:e.clientX; const cY=e.touches?e.touches[0].clientY:e.clientY; panStart.cursorX=cX; panStart.cursorY=cY; return; }
+                if (currentTool==='text') { const coords=getCanvasCoords(e); showTextInput(coords.x, coords.y); return; }
+                painting=true; const coords=getCanvasCoords(e); startX=coords.x; startY=coords.y;
+                if (['rectangle','circle','line'].includes(currentTool)) { snapshot=ctx.getImageData(0,0,canvas.width,canvas.height); } else { ctx.beginPath(); ctx.moveTo(startX, startY); }
             }
-            container.addEventListener('scroll', updateMinimapViewport);
-            window.addEventListener('resize', updateMinimapViewport);
-
-            // drawing core
-            function getCanvasCoords(e) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const x = (clientX - rect.left) * scaleX / zoom;
-                const y = (clientY - rect.top) * scaleY / zoom;
-                return { x, y };
+            function handleMove(e) { /* ... move logic */ 
+                e.preventDefault(); if (currentTool==='hand' && panStart.cursorX) { const clientX=e.touches?e.touches[0].clientX:e.clientX; const clientY=e.touches?e.touches[0].clientY:e.clientY; container.scrollLeft = panStart.x - (clientX-panStart.cursorX); container.scrollTop = panStart.y - (clientY-panStart.cursorY); updateMinimapViewport(); return; }
+                if (!painting) return; const coords=getCanvasCoords(e);
+                if (currentTool==='pencil'||currentTool==='eraser') { const color=currentTool==='eraser'?'#ffffff':colorPicker.value; ctx.lineWidth=sizeSlider.value; ctx.lineCap='round'; ctx.strokeStyle=color; ctx.lineTo(coords.x,coords.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(coords.x,coords.y); }
+                else if (snapshot) { ctx.putImageData(snapshot,0,0); ctx.strokeStyle=colorPicker.value; ctx.lineWidth=sizeSlider.value; if (currentTool==='rectangle') ctx.strokeRect(startX,startY,coords.x-startX,coords.y-startY); else if (currentTool==='circle') { const r=Math.hypot(coords.x-startX,coords.y-startY); ctx.beginPath(); ctx.arc(startX,startY,r,0,2*Math.PI); ctx.stroke(); } else if (currentTool==='line') { ctx.beginPath(); ctx.moveTo(startX,startY); ctx.lineTo(coords.x,coords.y); ctx.stroke(); } }
             }
-
-            function handleStart(e) {
-                e.preventDefault();
-                if (currentTool === 'hand') {
-                    panStart.x = container.scrollLeft; panStart.y = container.scrollTop;
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    panStart.cursorX = clientX; panStart.cursorY = clientY;
-                    return;
-                }
-                if (currentTool === 'text') {
-                    const coords = getCanvasCoords(e);
-                    showTextInput(coords.x, coords.y);
-                    return;
-                }
-                painting = true;
-                const coords = getCanvasCoords(e);
-                startX = coords.x; startY = coords.y;
-
-                if (['rectangle','circle','line'].includes(currentTool)) {
-                    snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                } else {
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                }
-            }
-
-            function handleMove(e) {
-                e.preventDefault();
-                if (currentTool === 'hand') {
-                    if (!panStart.cursorX) return;
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    const dx = clientX - panStart.cursorX, dy = clientY - panStart.cursorY;
-                    container.scrollLeft = panStart.x - dx;
-                    container.scrollTop = panStart.y - dy;
-                    updateMinimapViewport();
-                    return;
-                }
-                if (!painting) return;
-                const coords = getCanvasCoords(e);
-                if (currentTool === 'pencil' || currentTool === 'eraser') {
-                    const color = currentTool === 'eraser' ? '#ffffff' : document.getElementById('colorPicker').value;
-                    ctx.lineWidth = document.getElementById('sizeSlider').value;
-                    ctx.lineCap = 'round'; ctx.strokeStyle = color;
-                    ctx.lineTo(coords.x, coords.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(coords.x, coords.y);
-                } else if (snapshot) {
-                    ctx.putImageData(snapshot, 0, 0);
-                    ctx.strokeStyle = document.getElementById('colorPicker').value;
-                    ctx.lineWidth = document.getElementById('sizeSlider').value;
-                    if (currentTool === 'rectangle') {
-                        ctx.strokeRect(startX, startY, coords.x - startX, coords.y - startY);
-                    } else if (currentTool === 'circle') {
-                        const radius = Math.hypot(coords.x - startX, coords.y - startY);
-                        ctx.beginPath(); ctx.arc(startX, startY, radius, 0, 2*Math.PI); ctx.stroke();
-                    } else if (currentTool === 'line') {
-                        ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(coords.x, coords.y); ctx.stroke();
-                    }
-                }
-            }
-
-            function handleEnd(e) {
-                e.preventDefault();
-                if (currentTool === 'hand') { panStart.cursorX = 0; return; }
-                if (painting) {
-                    painting = false;
-                    saveState();
-                    ctx.beginPath();
-                }
-                snapshot = null;
-                updateMinimap();
-            }
-
-            // text tool
-            function showTextInput(x, y) {
-                if (activeTextInput) activeTextInput.remove();
-                const input = document.createElement('div');
-                input.className = 'text-editor';
-                input.contentEditable = 'true';
-                input.style.left = (x * zoom + container.scrollLeft - 30) + 'px';
-                input.style.top = (y * zoom + container.scrollTop - 20) + 'px';
-                input.style.fontSize = document.getElementById('sizeSlider').value + 'px';
-                input.style.color = document.getElementById('colorPicker').value;
-                document.body.appendChild(input);
-                activeTextInput = input;
-                input.focus();
-
-                const finish = () => {
-                    if (activeTextInput) {
-                        const text = activeTextInput.innerText;
-                        if (text.trim()) {
-                            ctx.font = `${activeTextInput.style.fontSize} 'Inter'`;
-                            ctx.fillStyle = activeTextInput.style.color;
-                            ctx.fillText(text, x, y);
-                            saveState(); updateMinimap();
-                        }
-                        activeTextInput.remove(); activeTextInput = null;
-                    }
-                };
-                input.addEventListener('blur', finish);
-                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+            function handleEnd(e) { e.preventDefault(); if (currentTool==='hand') { panStart.cursorX=0; return; } if (painting) { painting=false; saveState(); ctx.beginPath(); } snapshot=null; updateMinimap(); }
+            function showTextInput(x,y) { /* from original */ 
+                if (activeTextInput) activeTextInput.remove(); const input = document.createElement('div'); input.className='text-editor'; input.contentEditable='true'; input.style.left = (x*zoom + container.scrollLeft-30)+'px'; input.style.top = (y*zoom+container.scrollTop-20)+'px'; input.style.fontSize = sizeSlider.value+'px'; input.style.color = colorPicker.value; document.body.appendChild(input); activeTextInput=input; input.focus();
+                const finish = () => { if (activeTextInput) { const text=activeTextInput.innerText; if (text.trim()) { ctx.font = `${activeTextInput.style.fontSize} 'Inter'`; ctx.fillStyle=activeTextInput.style.color; ctx.fillText(text,x,y); saveState(); updateMinimap(); } activeTextInput.remove(); activeTextInput=null; } };
+                input.addEventListener('blur', finish); input.addEventListener('keydown', (e) => { if (e.key==='Enter') { e.preventDefault(); input.blur(); } });
             }
             function cancelTextEdit() { if (activeTextInput) activeTextInput.blur(); }
+            window.clearBoard = function() { ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); saveState(); updateMinimap(); };
+            window.saveHighRes = function() { const link=document.createElement('a'); link.download='board.png'; link.href=canvas.toDataURL('image/png'); link.click(); };
 
-            // clear, export
-            window.clearBoard = function() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveState(); updateMinimap(); };
-            window.saveHighRes = function() { const link = document.createElement('a'); link.download = 'board.png'; link.href = canvas.toDataURL('image/png'); link.click(); };
+            // attach listeners
+            canvas.addEventListener('mousedown', handleStart); canvas.addEventListener('mousemove', handleMove); canvas.addEventListener('mouseup', handleEnd); canvas.addEventListener('mouseleave', handleEnd);
+            canvas.addEventListener('touchstart', handleStart, { passive: false }); canvas.addEventListener('touchmove', handleMove, { passive: false }); canvas.addEventListener('touchend', handleEnd); canvas.addEventListener('touchcancel', handleEnd);
+            document.addEventListener('keydown', (e) => { if (e.ctrlKey||e.metaKey) { if (e.key==='z') { e.preventDefault(); undo(); } if (e.key==='y') { e.preventDefault(); redo(); } } });
 
             // init
-            saveState();
-
-            // size display
-            document.getElementById('sizeSlider').addEventListener('input', (e) => {
-                document.getElementById('sizeDisplay').innerText = e.target.value;
-            });
-
-            // listeners
-            canvas.addEventListener('mousedown', handleStart);
-            canvas.addEventListener('mousemove', handleMove);
-            canvas.addEventListener('mouseup', handleEnd);
-            canvas.addEventListener('mouseleave', handleEnd);
-            canvas.addEventListener('touchstart', handleStart, { passive: false });
-            canvas.addEventListener('touchmove', handleMove, { passive: false });
-            canvas.addEventListener('touchend', handleEnd);
-            canvas.addEventListener('touchcancel', handleEnd);
-
-            // keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey || e.metaKey) {
-                    if (e.key === 'z') { e.preventDefault(); undo(); }
-                    if (e.key === 'y') { e.preventDefault(); redo(); }
-                }
-            });
-
-            // auto center long question
-            window.addEventListener('load', () => {
-                const q = document.getElementById('questionDisplay');
-                if (q && q.scrollWidth > q.clientWidth) document.getElementById('infoPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                updateMinimap(); updateMinimapViewport(); resetZoom();
-            });
-
-            setInterval(updateMinimap, 1000);
+            saveState(); updateMinimap(); updateMinimapViewport(); resetZoom();
+            setActiveTool('pencil');
         })();
     </script>
 </body>
