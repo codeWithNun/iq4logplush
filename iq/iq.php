@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>IQ Pro Arena | LogPlus</title>
+    <link rel="stylesheet" href="css/iq.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="theme-toggle">
+        <button id="theme-switch" class="theme-btn" aria-label="Toggle dark mode">
+            <span class="light-icon">☀️</span>
+            <span class="dark-icon">🌙</span>
+        </button>
+    </div>
+
+    <div id="quiz-wrapper">
+        <header class="glass-header">
+            <h1 class="logo">LogPlus <span>IQ Pro</span></h1>
+            <div id="part-selector" class="part-grid">
+                <button onclick="initQuiz('json/numberAnalogy.json', 1)" class="btn-part glass">
+                    <span class="part-number">1</span>
+                    <span class="part-title">Basic</span>
+                    <span class="part-desc">Number Patterns</span>
+                </button>
+                <button onclick="initQuiz('json/numberAnalogy2.json', 2)" class="btn-part glass">
+                    <span class="part-number">2</span>
+                    <span class="part-title">Advanced</span>
+                    <span class="part-desc">Complex Series</span>
+                </button>
+            </div>
+
+            <div id="quiz-header-info" style="display:none;">
+                <div class="header-stats">
+                    <h3 id="current-part-label" class="part-badge">Part 1</h3>
+                    <div class="score-display">
+                        <span class="score-label">Score:</span>
+                        <span id="score-value" class="score-value">0</span>
+                        <span class="score-total">/0</span>
+                    </div>
+                </div>
+                <div class="progress-container">
+                    <div id="progress-bar" class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <span id="current-q-num" class="question-counter">1</span>
+                    <span class="question-total">/0</span>
+                </div>
+                <div class="timer-container">
+                    <span class="timer-icon">⏱️</span>
+                    <span id="timer-display" class="timer-display">00:30</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Skeleton Loader -->
+        <div id="skeleton-loader" class="skeleton-loader" style="display:none;">
+            <div class="skeleton-header"></div>
+            <div class="skeleton-question"></div>
+            <div class="skeleton-options">
+                <div class="skeleton-option"></div>
+                <div class="skeleton-option"></div>
+                <div class="skeleton-option"></div>
+                <div class="skeleton-option"></div>
+            </div>
+        </div>
+
+        <div id="question-card" style="display:none;">
+            <div class="q-header glass">
+                <h2 id="question-text" class="question-text">Loading...</h2>
+                <button id="open-practice-btn" class="btn-icon" title="Practice Area">
+                    <span class="icon">📝</span>
+                    <span class="tooltip">Open Practice Board</span>
+                </button>
+            </div>
+            
+            <div id="options-grid" class="options-grid"></div>
+            
+            <div class="controls glass">
+                <button id="show-ans-btn" class="btn secondary" disabled>
+                    <span class="btn-icon">🔍</span>
+                    <span class="btn-text">Show Solution</span>
+                </button>
+                <button id="next-btn" class="btn primary" style="display:none;">
+                    <span class="btn-text">Next Question</span>
+                    <span class="btn-icon">➔</span>
+                </button>
+            </div>
+
+            <div id="solution-panel" class="solution-panel hidden glass">
+                <div class="solution-header">
+                    <span class="solution-title">📖 Solution</span>
+                    <button id="hide-ans-btn" class="btn-close" aria-label="Hide solution">✕</button>
+                </div>
+                <div class="solution-content">
+                    <p id="sol-text-en" class="solution-text"></p>
+                    <div id="sol-media" class="solution-media"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Practice Modal -->
+    <div id="practiceModal" class="modal">
+        <div class="modal-content glass">
+            <div class="modal-header">
+                <h3>📝 Digital Workspace</h3>
+                <button class="close-modal" id="close-practice" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="practice-frame" class="practice-frame" src="" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Summary Modal -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content glass" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>🎯 Quiz Complete!</h3>
+                <button class="close-modal" onclick="closeResultModal()">✕</button>
+            </div>
+            <div class="modal-body result-summary">
+                <div class="circular-progress" id="circularProgress">
+                    <div class="progress-value">0%</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Correct Answers</span>
+                        <span id="correct-count" class="stat-value correct">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Questions</span>
+                        <span id="total-count" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Time Spent</span>
+                        <span id="time-spent" class="stat-value">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Accuracy</span>
+                        <span id="accuracy" class="stat-value">0%</span>
+                    </div>
+                </div>
+                <button onclick="location.reload()" class="btn primary full-width">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Try Another Part</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification System -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="js/quiz.js"></script>
+</body>
+</html>

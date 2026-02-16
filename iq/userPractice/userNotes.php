@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobile whiteboard · practice workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --toolbar-bg: rgba(255, 255, 255, 0.6);
+            --text-dark: #1e293b;
+            --text-light: #f8fafc;
+            --accent: #4f46e5;
+            --accent-soft: #6366f1;
+            --bg-grid: #cbd5e1;
+            --panel-bg: rgba(255, 255, 255, 0.8);
+            --close-btn: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --glass-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: rgba(71, 85, 105, 0.6);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --toolbar-bg: rgba(15, 23, 42, 0.7);
+            --text-dark: #f1f5f9;
+            --text-light: #0f172a;
+            --accent: #818cf8;
+            --accent-soft: #a5b4fc;
+            --bg-grid: #334155;
+            --panel-bg: rgba(30, 41, 59, 0.9);
+            --close-btn: #f87171;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background 0.2s;
+        }
+        [data-theme="dark"] body {
+            background: #0b1120;
+        }
+
+        /* ----- top info row (compact) ----- */
+        .info-panel {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            padding: 8px 18px;
+            box-shadow: var(--glass-shadow);
+            z-index: 2000;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 92vw;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .question-preview p {
+            font-weight: 600;
+            background: rgba(255,255,255,0.3);
+            padding: 4px 14px;
+            border-radius: 40px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 40vw;
+        }
+        .options-preview {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .option-chip {
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* ----- VERTICAL floating toolbar (mobile friendly) ----- */
+        .toolbar-vertical {
+            position: fixed;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 48px;
+            padding: 16px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: var(--glass-shadow);
+            z-index: 1500;
+            max-height: 85vh;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            width: 70px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .toolbar-vertical::-webkit-scrollbar { display: none; }
+
+        .tool-group-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(130,130,130,0.2);
+        }
+        .tool-group-vertical:last-child { border-bottom: none; }
+
+        .tool-btn {
+            background: transparent;
+            border: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 40px;
+            font-size: 1.4rem;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            touch-action: manipulation;
+            padding: 0;
+        }
+        .tool-btn span { font-size: 1.3rem; }
+        .tool-btn:hover {
+            background: rgba(255,255,255,0.4);
+            border-color: var(--glass-border);
+            transform: scale(1.05);
+        }
+        .tool-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.6);
+        }
+        .tool-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* color & size inside vertical bar */
+        .color-size-group {
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        input[type="color"] {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            background: transparent;
+            padding: 2px;
+        }
+        .size-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-dark);
+        }
+        input[type="range"] {
+            width: 60px;
+            height: 6px;
+            transform: rotate(-90deg) translateX(-20px);
+            margin: 25px 0;
+        }
+        #sizeDisplay { 
+            margin-top: 30px; 
+            font-weight: 600;
+        }
+
+        /* canvas container */
+        .canvas-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: auto;
+            background: var(--bg-secondary, #f8fafc);
+            scroll-behavior: smooth;
+        }
+        [data-theme="dark"] .canvas-container { background: #1a1f2e; }
+
+        #canvas {
+            display: block;
+            background: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transform-origin: 0 0;
+        }
+        [data-theme="dark"] #canvas { background: #2d3748; }
+
+        /* minimap (smaller for mobile) */
+        .minimap {
+            position: fixed;
+            bottom: 20px;
+            right: 12px;
+            width: 130px;
+            height: 90px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--glass-shadow);
+            z-index: 1600;
+            overflow: hidden;
+        }
+        #minimapCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.9;
+        }
+        .minimap-viewport {
+            position: absolute;
+            border: 2px solid var(--accent);
+            background: rgba(79, 70, 229, 0.1);
+            pointer-events: none;
+        }
+
+        /* fullscreen close button (appears only in fullscreen) */
+        .fullscreen-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 54px;
+            height: 54px;
+            border-radius: 30px;
+            background: var(--close-btn);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            font-size: 2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            box-shadow: 0 8px 20px rgba(239,68,68,0.6);
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            transition: transform 0.1s;
+        }
+        .fullscreen-close:active { transform: scale(1.1); }
+        .fullscreen-close span { font-size: 2rem; line-height: 1; }
+
+        /* text editing */
+        .text-editor {
+            position: fixed;
+            background: white;
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 20px;
+            outline: none;
+            resize: both;
+            min-width: 140px;
+            z-index: 2500;
+            box-shadow: var(--glass-shadow);
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- glass info panel (PHP ready) -->
+    <div class="info-panel" id="infoPanel">
+        <div class="question-preview">
+            <p><?php echo htmlspecialchars($_GET['q'] ?? '📝 Practice whiteboard'); ?></p>
+        </div>
+        <div class="options-preview">
+            <?php 
+            if (isset($_GET['opts'])) {
+                $options = explode(',', $_GET['opts']);
+                foreach ($options as $opt) {
+                    echo "<span class='option-chip'>" . htmlspecialchars(trim($opt)) . "</span>";
+                }
+            } else {
+                echo "<span class='option-chip'>A</span><span class='option-chip'>B</span><span class='option-chip'>C</span>";
+            }
+            ?>
+        </div>
+    </div>
+
+    <!-- VERTICAL TOOLBAR (left) -->
+    <div class="toolbar-vertical" id="toolbarVertical">
+        <div class="tool-group-vertical">
+            <button class="tool-btn" id="handToolBtn" onclick="setTool('hand')"><span>🖐️</span></button>
+            <button class="tool-btn active" id="pencilToolBtn" onclick="setTool('pencil')"><span>✏️</span></button>
+            <button class="tool-btn" id="eraserToolBtn" onclick="setTool('eraser')"><span>🧽</span></button>
+        </div>
+        <div class="tool-group-vertical">
+            <button class="tool-btn" id="rectBtn" onclick="setTool('rectangle')"><span>⬛</span></button>
+            <button class="tool-btn" id="circleBtn" onclick="setTool('circle')"><span>⚪</span></button>
+            <button class="tool-btn" id="lineBtn" onclick="setTool('line')"><span>📏</span></button>
+            <button class="tool-btn" id="textBtn" onclick="setTool('text')"><span>🔤</span></button>
+        </div>
+        <div class="tool-group-vertical">
+            <button class="tool-btn" id="undoBtn" onclick="undo()" disabled><span>↩️</span></button>
+            <button class="tool-btn" id="redoBtn" onclick="redo()" disabled><span>↪️</span></button>
+            <button class="tool-btn" onclick="clearBoard()"><span>🗑️</span></button>
+        </div>
+        <div class="tool-group-vertical">
+            <button class="tool-btn" id="gridToggle" onclick="toggleGrid()"><span>📐</span></button>
+            <button class="tool-btn" onclick="toggleTheme()"><span>🌓</span></button>
+            <button class="tool-btn fullscreen-btn" onclick="toggleFullScreen()"><span>⛶</span></button>
+        </div>
+        <div class="tool-group-vertical color-size-group">
+            <input type="color" id="colorPicker" value="#4f46e5">
+            <div class="size-control">
+                <input type="range" id="sizeSlider" min="1" max="30" value="5" orient="vertical">
+                <span id="sizeDisplay">5</span>
+            </div>
+        </div>
+        <div class="tool-group-vertical">
+            <button class="tool-btn" onclick="zoomIn()"><span>➕</span></button>
+            <button class="tool-btn" onclick="zoomOut()"><span>➖</span></button>
+            <button class="tool-btn" onclick="resetZoom()"><span>⟲</span></button>
+            <button class="tool-btn" onclick="saveHighRes()"><span>💾</span></button>
+        </div>
+    </div>
+
+    <!-- canvas container -->
+    <div class="canvas-container" id="canvasContainer">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <!-- minimap -->
+    <div class="minimap" id="minimapWrapper">
+        <canvas id="minimapCanvas"></canvas>
+        <div class="minimap-viewport" id="minimapViewport"></div>
+    </div>
+
+    <!-- fullscreen close button (visible only when fullscreen) -->
+    <div class="fullscreen-close" id="fullscreenCloseBtn" onclick="exitFullscreen()"><span>✕</span></div>
+
+    <script>
+        (function() {
+            // ---------- canvas setup ----------
+            const container = document.getElementById('canvasContainer');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const minimap = document.getElementById('minimapCanvas');
+            const miniCtx = minimap.getContext('2d');
+            const viewportDiv = document.getElementById('minimapViewport');
+            const closeBtn = document.getElementById('fullscreenCloseBtn');
+
+            // large canvas
+            const BASE_WIDTH = 3000, BASE_HEIGHT = 2000;
+            canvas.width = BASE_WIDTH;
+            canvas.height = BASE_HEIGHT;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // ---------- state ----------
+            let currentTool = 'pencil';
+            let painting = false;
+            let startX, startY;
+            let snapshot;
+            let gridEnabled = false;
+            let zoom = 1.0;
+            let theme = 'light';
+
+            // history
+            let history = [];
+            let historyIndex = -1;
+            const MAX_HISTORY = 40;
+
+            let activeTextInput = null;
+
+            // pan for hand
+            let panStart = { x:0, y:0, cursorX:0, cursorY:0 };
+
+            // ---------- helpers ----------
+            function saveState() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
+                history.push(imageData);
+                historyIndex++;
+                if (history.length > MAX_HISTORY) { history.shift(); historyIndex--; }
+                updateUndoRedo();
+                updateMinimap();
+            }
+
+            function updateUndoRedo() {
+                document.getElementById('undoBtn').disabled = historyIndex <= 0;
+                document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+            }
+
+            window.undo = function() { if (historyIndex > 0) { historyIndex--; ctx.putImageData(history[historyIndex], 0, 0); updateUndoRedo(); updateMinimap(); } };
+            window.redo = function() { if (historyIndex < history.length - 1) { historyIndex++; ctx.putImageData(history[historyIndex], 0, 0); updateUndoRedo(); updateMinimap(); } };
+
+            // set tool & active class
+            window.setTool = function(tool) {
+                currentTool = tool;
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                if (tool === 'hand') document.getElementById('handToolBtn').classList.add('active');
+                if (tool === 'pencil') document.getElementById('pencilToolBtn').classList.add('active');
+                if (tool === 'eraser') document.getElementById('eraserToolBtn').classList.add('active');
+                if (tool === 'rectangle') document.getElementById('rectBtn').classList.add('active');
+                if (tool === 'circle') document.getElementById('circleBtn').classList.add('active');
+                if (tool === 'line') document.getElementById('lineBtn').classList.add('active');
+                if (tool === 'text') document.getElementById('textBtn').classList.add('active');
+                if (activeTextInput) cancelTextEdit();
+            };
+
+            // grid
+            window.toggleGrid = function() {
+                gridEnabled = !gridEnabled;
+                document.getElementById('gridToggle').classList.toggle('active', gridEnabled);
+                redrawGrid();
+            };
+            function redrawGrid() {
+                if (!gridEnabled) {
+                    if (history[historyIndex]) ctx.putImageData(history[historyIndex], 0, 0);
+                    return;
+                }
+                if (history[historyIndex]) ctx.putImageData(history[historyIndex], 0, 0);
+                ctx.save();
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.5;
+                const step = 30;
+                ctx.beginPath();
+                for (let i = 0; i <= canvas.width; i += step) { ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); }
+                for (let i = 0; i <= canvas.height; i += step) { ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // zoom
+            window.zoomIn = function() { zoom = Math.min(3, zoom + 0.2); applyZoom(); };
+            window.zoomOut = function() { zoom = Math.max(0.3, zoom - 0.2); applyZoom(); };
+            window.resetZoom = function() { zoom = 1.0; applyZoom(); centerCanvas(); };
+            function applyZoom() { canvas.style.transform = `scale(${zoom})`; updateMinimapViewport(); }
+            function centerCanvas() {
+                container.scrollLeft = (canvas.width * zoom - container.clientWidth) / 2;
+                container.scrollTop = (canvas.height * zoom - container.clientHeight) / 2;
+                updateMinimapViewport();
+            }
+
+            // fullscreen handling
+            window.toggleFullScreen = function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                    closeBtn.style.display = 'flex';
+                } else {
+                    exitFullscreen();
+                }
+            };
+            window.exitFullscreen = function() {
+                if (document.exitFullscreen) document.exitFullscreen();
+                closeBtn.style.display = 'none';
+            };
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) closeBtn.style.display = 'none';
+            });
+
+            // theme
+            window.toggleTheme = function() {
+                theme = theme === 'light' ? 'dark' : 'light';
+                document.body.parentElement.setAttribute('data-theme', theme);
+                redrawGrid();
+            };
+
+            // minimap
+            function updateMinimap() {
+                minimap.width = 130; minimap.height = 90;
+                miniCtx.drawImage(canvas, 0, 0, 130, 90);
+            }
+            function updateMinimapViewport() {
+                const left = container.scrollLeft, top = container.scrollTop;
+                const width = container.clientWidth, height = container.clientHeight;
+                const totalW = canvas.width * zoom, totalH = canvas.height * zoom;
+                const vpLeft = (left / totalW) * 130, vpTop = (top / totalH) * 90;
+                const vpW = (width / totalW) * 130, vpH = (height / totalH) * 90;
+                viewportDiv.style.left = vpLeft + 'px'; viewportDiv.style.top = vpTop + 'px';
+                viewportDiv.style.width = vpW + 'px'; viewportDiv.style.height = vpH + 'px';
+            }
+            container.addEventListener('scroll', updateMinimapViewport);
+            window.addEventListener('resize', updateMinimapViewport);
+
+            // drawing core
+            function getCanvasCoords(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const x = (clientX - rect.left) * scaleX / zoom;
+                const y = (clientY - rect.top) * scaleY / zoom;
+                return { x, y };
+            }
+
+            function handleStart(e) {
+                e.preventDefault();
+                if (currentTool === 'hand') {
+                    panStart.x = container.scrollLeft; panStart.y = container.scrollTop;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    panStart.cursorX = clientX; panStart.cursorY = clientY;
+                    return;
+                }
+                if (currentTool === 'text') {
+                    const coords = getCanvasCoords(e);
+                    showTextInput(coords.x, coords.y);
+                    return;
+                }
+                painting = true;
+                const coords = getCanvasCoords(e);
+                startX = coords.x; startY = coords.y;
+
+                if (['rectangle','circle','line'].includes(currentTool)) {
+                    snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                }
+            }
+
+            function handleMove(e) {
+                e.preventDefault();
+                if (currentTool === 'hand') {
+                    if (!panStart.cursorX) return;
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                    const dx = clientX - panStart.cursorX, dy = clientY - panStart.cursorY;
+                    container.scrollLeft = panStart.x - dx;
+                    container.scrollTop = panStart.y - dy;
+                    updateMinimapViewport();
+                    return;
+                }
+                if (!painting) return;
+                const coords = getCanvasCoords(e);
+                if (currentTool === 'pencil' || currentTool === 'eraser') {
+                    const color = currentTool === 'eraser' ? '#ffffff' : document.getElementById('colorPicker').value;
+                    ctx.lineWidth = document.getElementById('sizeSlider').value;
+                    ctx.lineCap = 'round'; ctx.strokeStyle = color;
+                    ctx.lineTo(coords.x, coords.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(coords.x, coords.y);
+                } else if (snapshot) {
+                    ctx.putImageData(snapshot, 0, 0);
+                    ctx.strokeStyle = document.getElementById('colorPicker').value;
+                    ctx.lineWidth = document.getElementById('sizeSlider').value;
+                    if (currentTool === 'rectangle') {
+                        ctx.strokeRect(startX, startY, coords.x - startX, coords.y - startY);
+                    } else if (currentTool === 'circle') {
+                        const radius = Math.hypot(coords.x - startX, coords.y - startY);
+                        ctx.beginPath(); ctx.arc(startX, startY, radius, 0, 2*Math.PI); ctx.stroke();
+                    } else if (currentTool === 'line') {
+                        ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(coords.x, coords.y); ctx.stroke();
+                    }
+                }
+            }
+
+            function handleEnd(e) {
+                e.preventDefault();
+                if (currentTool === 'hand') { panStart.cursorX = 0; return; }
+                if (painting) {
+                    painting = false;
+                    saveState();
+                    ctx.beginPath();
+                }
+                snapshot = null;
+                updateMinimap();
+            }
+
+            // text tool
+            function showTextInput(x, y) {
+                if (activeTextInput) activeTextInput.remove();
+                const input = document.createElement('div');
+                input.className = 'text-editor';
+                input.contentEditable = 'true';
+                input.style.left = (x * zoom + container.scrollLeft - 30) + 'px';
+                input.style.top = (y * zoom + container.scrollTop - 20) + 'px';
+                input.style.fontSize = document.getElementById('sizeSlider').value + 'px';
+                input.style.color = document.getElementById('colorPicker').value;
+                document.body.appendChild(input);
+                activeTextInput = input;
+                input.focus();
+
+                const finish = () => {
+                    if (activeTextInput) {
+                        const text = activeTextInput.innerText;
+                        if (text.trim()) {
+                            ctx.font = `${activeTextInput.style.fontSize} 'Inter'`;
+                            ctx.fillStyle = activeTextInput.style.color;
+                            ctx.fillText(text, x, y);
+                            saveState(); updateMinimap();
+                        }
+                        activeTextInput.remove(); activeTextInput = null;
+                    }
+                };
+                input.addEventListener('blur', finish);
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
+            }
+            function cancelTextEdit() { if (activeTextInput) activeTextInput.blur(); }
+
+            // clear, export
+            window.clearBoard = function() { ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); saveState(); updateMinimap(); };
+            window.saveHighRes = function() { const link = document.createElement('a'); link.download = 'board.png'; link.href = canvas.toDataURL('image/png'); link.click(); };
+
+            // init
+            saveState();
+
+            // size display
+            document.getElementById('sizeSlider').addEventListener('input', (e) => {
+                document.getElementById('sizeDisplay').innerText = e.target.value;
+            });
+
+            // listeners
+            canvas.addEventListener('mousedown', handleStart);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('mouseup', handleEnd);
+            canvas.addEventListener('mouseleave', handleEnd);
+            canvas.addEventListener('touchstart', handleStart, { passive: false });
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchend', handleEnd);
+            canvas.addEventListener('touchcancel', handleEnd);
+
+            // keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'z') { e.preventDefault(); undo(); }
+                    if (e.key === 'y') { e.preventDefault(); redo(); }
+                }
+            });
+
+            // auto center long question
+            window.addEventListener('load', () => {
+                const q = document.querySelector('.question-preview p');
+                if (q && q.scrollWidth > q.clientWidth) document.getElementById('infoPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                updateMinimap(); updateMinimapViewport(); resetZoom();
+            });
+
+            setInterval(updateMinimap, 1000);
+        })();
+    </script>
+</body>
+</html>
